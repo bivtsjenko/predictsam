@@ -4,12 +4,13 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MarketCard } from "@/components/market-card";
-import type { Market, MarketStatus } from "@/types";
+import type { Currency, Market, MarketStatus } from "@/types";
 
 interface MarketListProps {
   markets: Market[];
   groupId: string;
   loading: boolean;
+  currency?: Currency;
 }
 
 const tabs: { value: string; label: string; status?: MarketStatus }[] = [
@@ -19,7 +20,7 @@ const tabs: { value: string; label: string; status?: MarketStatus }[] = [
   { value: "resolved", label: "Resolved", status: "resolved" },
 ];
 
-export function MarketList({ markets, groupId, loading }: MarketListProps) {
+export function MarketList({ markets, groupId, loading, currency }: MarketListProps) {
   const [activeTab, setActiveTab] = useState("all");
 
   const filteredMarkets =
@@ -61,6 +62,7 @@ export function MarketList({ markets, groupId, loading }: MarketListProps) {
                   key={market.id}
                   market={market}
                   groupId={groupId}
+                  currency={currency}
                 />
               ))}
             </div>

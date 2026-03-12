@@ -11,7 +11,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { Group } from "@/types";
+import type { Currency, Group } from "@/types";
 
 const groupsRef = collection(db, "groups");
 
@@ -22,7 +22,8 @@ function generateInviteCode(): string {
 export async function createGroup(
   name: string,
   description: string,
-  userId: string
+  userId: string,
+  currency: Currency = "EUR"
 ): Promise<string> {
   const group: Omit<Group, "id"> = {
     name,
@@ -30,6 +31,7 @@ export async function createGroup(
     createdBy: userId,
     inviteCode: generateInviteCode(),
     memberIds: [userId],
+    currency,
     createdAt: Timestamp.now(),
   };
   const docRef = await addDoc(groupsRef, group);

@@ -90,6 +90,7 @@ export default function GroupPage() {
         markets={markets}
         groupId={groupId}
         loading={marketsLoading}
+        currency={group.currency}
       />
     </div>
   );

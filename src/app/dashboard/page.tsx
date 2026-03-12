@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getUserBets, getUserSettlements } from "@/lib/firestore/markets";
 import { getMarket } from "@/lib/firestore/markets";
+import { getGroup } from "@/lib/firestore/groups";
+import { currencySymbol } from "@/lib/currency";
 import { SettlementSummary } from "@/components/settlement-summary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import { OddsBar } from "@/components/odds-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import type { Bet, Market, Settlement } from "@/types";
+import type { Bet, Currency, Market, Settlement } from "@/types";
 
 export default function DashboardPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -20,6 +22,7 @@ export default function DashboardPage() {
   const [bets, setBets] = useState<Bet[]>([]);
   const [markets, setMarkets] = useState<Record<string, Market>>({});
   const [settlements, setSettlements] = useState<Settlement[]>([]);
+  const [groupCurrencies, setGroupCurrencies] = useState<Record<string, Currency>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +52,17 @@ export default function DashboardPage() {
           if (m) marketMap[m.id!] = m;
         });
         setMarkets(marketMap);
+
+        // Fetch group currencies
+        const groupIds = [...new Set(userBets.map((b) => b.groupId))];
+        const groupDocs = await Promise.all(
+          groupIds.map((id) => getGroup(id))
+        );
+        const currencyMap: Record<string, Currency> = {};
+        groupDocs.forEach((g) => {
+          if (g?.id) currencyMap[g.id] = g.currency || "EUR";
+        });
+        setGroupCurrencies(currencyMap);
       } catch {
         // errors handled silently
       } finally {
@@ -129,7 +143,7 @@ export default function DashboardPage() {
                           {bet.side.toUpperCase()}
                         </Badge>
                         <span className="text-sm font-medium">
-                          ${bet.amount.toFixed(2)}
+                          {currencySymbol(groupCurrencies[bet.groupId])}{bet.amount.toFixed(2)}
                         </span>
                       </div>
                       <OddsBar

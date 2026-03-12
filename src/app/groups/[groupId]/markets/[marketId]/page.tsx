@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { useMarket, useMarketBets } from "@/hooks/use-markets";
 import { getMarketSettlements } from "@/lib/firestore/markets";
+import { getGroup } from "@/lib/firestore/groups";
+import { currencySymbol } from "@/lib/currency";
 import { OddsBar } from "@/components/odds-bar";
 import { BetPlacement } from "@/components/bet-placement";
 import { MarketResolution } from "@/components/market-resolution";
@@ -16,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import type { Settlement } from "@/types";
+import type { Currency, Settlement } from "@/types";
 
 export default function MarketDetailPage() {
   const { user } = useAuth();
@@ -28,6 +30,19 @@ export default function MarketDetailPage() {
   const { bets, loading: betsLoading } = useMarketBets(marketId);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [settlementsLoading, setSettlementsLoading] = useState(true);
+  const [currency, setCurrency] = useState<Currency>("EUR");
+
+  useEffect(() => {
+    async function fetchGroup() {
+      try {
+        const g = await getGroup(groupId);
+        if (g?.currency) setCurrency(g.currency);
+      } catch {
+        // default currency
+      }
+    }
+    if (groupId) fetchGroup();
+  }, [groupId]);
 
   useEffect(() => {
     async function fetchSettlements() {
@@ -98,7 +113,7 @@ export default function MarketDetailPage() {
                 Resolves: {resolutionDate.toLocaleDateString()}
               </span>
               <span>
-                Volume: ${(market.totalYesAmount + market.totalNoAmount).toFixed(2)}
+                Volume: {currencySymbol(currency)}{(market.totalYesAmount + market.totalNoAmount).toFixed(2)}
               </span>
             </div>
             {market.status === "resolved" && market.outcome && (
@@ -171,7 +186,7 @@ export default function MarketDetailPage() {
                               </Badge>
                             </td>
                             <td className="py-2 text-right font-medium">
-                              ${bet.amount.toFixed(2)}
+                              {currencySymbol(currency)}{bet.amount.toFixed(2)}
                             </td>
                             <td className="py-2 text-right text-muted-foreground">
                               {placedAt.toLocaleDateString()}
@@ -191,6 +206,7 @@ export default function MarketDetailPage() {
             <SettlementSummary
               settlements={settlements}
               currentUserId={user.uid}
+              currency={currency}
             />
           )}
         </div>
@@ -211,7 +227,7 @@ export default function MarketDetailPage() {
               </Card>
             ) : (
               <>
-                {market.status === "open" && <BetPlacement market={market} />}
+                {market.status === "open" && <BetPlacement market={market} currency={currency} />}
                 {(market.status === "open" || market.status === "closed") && (
                   <div className="mt-4">
                     <MarketResolution market={market} />

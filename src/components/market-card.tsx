@@ -4,11 +4,13 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { OddsBar } from "@/components/odds-bar";
-import type { Market } from "@/types";
+import { currencySymbol } from "@/lib/currency";
+import type { Currency, Market } from "@/types";
 
 interface MarketCardProps {
   market: Market;
   groupId: string;
+  currency?: Currency;
 }
 
 const statusConfig: Record<
@@ -20,7 +22,8 @@ const statusConfig: Record<
   resolved: { label: "Resolved", variant: "secondary" },
 };
 
-export function MarketCard({ market, groupId }: MarketCardProps) {
+export function MarketCard({ market, groupId, currency }: MarketCardProps) {
+  const sym = currencySymbol(currency);
   const config = statusConfig[market.status] || statusConfig.open;
   const totalPool = market.totalYesAmount + market.totalNoAmount;
   const resolutionDate = market.resolutionDate?.toDate
@@ -61,7 +64,7 @@ export function MarketCard({ market, groupId }: MarketCardProps) {
             size="sm"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Volume: ${totalPool.toFixed(2)}</span>
+            <span>Volume: {sym}{totalPool.toFixed(2)}</span>
             <span>
               Resolves:{" "}
               {resolutionDate.toLocaleDateString()}

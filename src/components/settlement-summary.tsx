@@ -9,17 +9,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { Settlement } from "@/types";
+import { currencySymbol } from "@/lib/currency";
+import type { Currency, Settlement } from "@/types";
 
 interface SettlementSummaryProps {
   settlements: Settlement[];
   currentUserId: string;
+  currency?: Currency;
 }
 
 export function SettlementSummary({
   settlements,
   currentUserId,
+  currency,
 }: SettlementSummaryProps) {
+  const sym = currencySymbol(currency);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
   const [settlingIds, setSettlingIds] = useState<Set<string>>(new Set());
 
@@ -121,7 +125,7 @@ export function SettlementSummary({
                         : "text-emerald-600 dark:text-emerald-400"
                     )}
                   >
-                    ${settlement.amount.toFixed(2)}
+                    {sym}{settlement.amount.toFixed(2)}
                   </p>
                 </div>
                 {settlement.settled ? (

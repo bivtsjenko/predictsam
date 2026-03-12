@@ -10,6 +10,8 @@ export interface User {
   createdAt: Timestamp;
 }
 
+export type Currency = "EUR" | "USD";
+
 export interface Group {
   id?: string;
   name: string;
@@ -17,6 +19,7 @@ export interface Group {
   createdBy: string;
   inviteCode: string;
   memberIds: string[];
+  currency: Currency;
   createdAt: Timestamp;
 }
 

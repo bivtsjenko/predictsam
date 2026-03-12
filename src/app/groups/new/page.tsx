@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import type { Currency } from "@/types";
 
 export default function NewGroupPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [currency, setCurrency] = useState<Currency>("EUR");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function NewGroupPage() {
 
     setLoading(true);
     try {
-      const groupId = await createGroup(name.trim(), description.trim(), user.uid);
+      const groupId = await createGroup(name.trim(), description.trim(), user.uid, currency);
       toast.success("Group created!");
       router.push(`/groups/${groupId}`);
     } catch (error: unknown) {
@@ -71,6 +73,27 @@ export default function NewGroupPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Currency</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={currency === "EUR" ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => setCurrency("EUR")}
+                >
+                  Euro
+                </Button>
+                <Button
+                  type="button"
+                  variant={currency === "USD" ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => setCurrency("USD")}
+                >
+                  $ Dollar
+                </Button>
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating..." : "Create Group"}

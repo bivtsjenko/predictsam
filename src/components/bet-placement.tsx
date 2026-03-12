@@ -9,14 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { Market, BetSide } from "@/types";
+import { currencySymbol } from "@/lib/currency";
+import type { Currency, Market, BetSide } from "@/types";
 
 interface BetPlacementProps {
   market: Market;
+  currency?: Currency;
   onBetPlaced?: () => void;
 }
 
-export function BetPlacement({ market, onBetPlaced }: BetPlacementProps) {
+export function BetPlacement({ market, currency, onBetPlaced }: BetPlacementProps) {
+  const sym = currencySymbol(currency);
   const { user, userProfile } = useAuth();
   const [side, setSide] = useState<BetSide>("yes");
   const [amount, setAmount] = useState("");
@@ -91,7 +94,7 @@ export function BetPlacement({ market, onBetPlaced }: BetPlacementProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="bet-amount">Amount ($)</Label>
+          <Label htmlFor="bet-amount">Amount ({sym})</Label>
           <Input
             id="bet-amount"
             type="number"
@@ -107,7 +110,7 @@ export function BetPlacement({ market, onBetPlaced }: BetPlacementProps) {
           <div className="rounded-md bg-muted p-3 text-sm space-y-1">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Potential payout</span>
-              <span className="font-medium">${potentialPayout.toFixed(2)}</span>
+              <span className="font-medium">{sym}{potentialPayout.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Net profit</span>
@@ -119,7 +122,7 @@ export function BetPlacement({ market, onBetPlaced }: BetPlacementProps) {
                     : "text-rose-600"
                 )}
               >
-                ${(potentialPayout - amountNum).toFixed(2)}
+                {sym}{(potentialPayout - amountNum).toFixed(2)}
               </span>
             </div>
           </div>
