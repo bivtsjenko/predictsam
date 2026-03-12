@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "PredictBet",
+  title: "PredictSam",
   description: "Prediction markets for your group",
 };
 
