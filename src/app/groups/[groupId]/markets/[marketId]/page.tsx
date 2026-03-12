@@ -18,6 +18,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Share2, Copy } from "lucide-react";
 import type { Currency, Settlement } from "@/types";
 
 export default function MarketDetailPage() {
@@ -81,6 +83,32 @@ export default function MarketDetailPage() {
     );
   }
 
+  const marketUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  async function handleShare() {
+    const shareData = {
+      title: market!.title,
+      text: `Place your bet: ${market!.title}`,
+      url: marketUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // user cancelled
+      }
+    } else {
+      await navigator.clipboard.writeText(marketUrl);
+      toast.success("Link copied!");
+    }
+  }
+
+  async function handleCopyLink() {
+    await navigator.clipboard.writeText(marketUrl);
+    toast.success("Link copied!");
+  }
+
   const resolutionDate = market.resolutionDate?.toDate
     ? market.resolutionDate.toDate()
     : new Date(market.resolutionDate as unknown as string);
@@ -108,13 +136,23 @@ export default function MarketDetailPage() {
             {market.description && (
               <p className="text-muted-foreground">{market.description}</p>
             )}
-            <div className="flex gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span>
                 Resolves: {resolutionDate.toLocaleDateString()}
               </span>
               <span>
                 Volume: {currencySymbol(currency)}{(market.totalYesAmount + market.totalNoAmount).toFixed(2)}
               </span>
+              <div className="ml-auto flex gap-1">
+                <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                  <Copy className="h-3.5 w-3.5 mr-1" />
+                  Copy
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleShare}>
+                  <Share2 className="h-3.5 w-3.5 mr-1" />
+                  Share
+                </Button>
+              </div>
             </div>
             {market.status === "resolved" && market.outcome && (
               <div
