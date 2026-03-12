@@ -31,8 +31,11 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.resource.data.createdBy == request.auth.uid
         && request.auth.uid in request.resource.data.memberIds;
-      // Only members can update
-      allow update: if isGroupMember(groupId);
+      // Members can update, OR any authenticated user can join (only adding themselves to memberIds)
+      allow update: if isGroupMember(groupId)
+        || (isAuthenticated()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds'])
+            && request.auth.uid in request.resource.data.memberIds);
       allow delete: if false;
     }
 
