@@ -48,7 +48,7 @@ service cloud.firestore {
         && request.resource.data.status == 'open'
         && request.resource.data.totalYesAmount == 0
         && request.resource.data.totalNoAmount == 0;
-      allow update: if isAuthenticated() && isGroupMember(resource.data.groupId);
+      allow update: if isAuthenticated();
       allow delete: if false;
     }
 
@@ -56,7 +56,6 @@ service cloud.firestore {
     match /bets/{betId} {
       allow read: if true;
       allow create: if isAuthenticated()
-        && isGroupMember(request.resource.data.groupId)
         && request.resource.data.userId == request.auth.uid;
       // Bets are immutable once placed
       allow update: if false;
