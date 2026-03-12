@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,21 +14,23 @@ export default function LoginPage() {
   const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } =
     useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   // Email state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
   const [emailLoading, setEmailLoading] = useState(false);
 
   const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/dashboard");
+      router.replace(redirectTo);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, redirectTo]);
 
   async function handleGoogle() {
     setGoogleLoading(true);
@@ -75,29 +77,19 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Welcome to PredictSam</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Sign in to start predicting
+            Create an account or sign in to start predicting
           </p>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="google">
+          <Tabs defaultValue="email">
             <TabsList className="w-full">
-              <TabsTrigger value="google" className="flex-1">
-                Google
-              </TabsTrigger>
               <TabsTrigger value="email" className="flex-1">
                 Email
               </TabsTrigger>
+              <TabsTrigger value="google" className="flex-1">
+                Google
+              </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="google" className="space-y-4 pt-4">
-              <Button
-                className="w-full"
-                onClick={handleGoogle}
-                disabled={googleLoading}
-              >
-                {googleLoading ? "Signing in..." : "Sign in with Google"}
-              </Button>
-            </TabsContent>
 
             <TabsContent value="email" className="pt-4">
               <form onSubmit={handleEmailSubmit} className="space-y-4">
@@ -157,6 +149,16 @@ export default function LoginPage() {
                     : "Need an account? Create one"}
                 </Button>
               </form>
+            </TabsContent>
+
+            <TabsContent value="google" className="space-y-4 pt-4">
+              <Button
+                className="w-full"
+                onClick={handleGoogle}
+                disabled={googleLoading}
+              >
+                {googleLoading ? "Signing in..." : "Sign in with Google"}
+              </Button>
             </TabsContent>
           </Tabs>
         </CardContent>

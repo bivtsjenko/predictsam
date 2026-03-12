@@ -26,8 +26,7 @@ service cloud.firestore {
 
     // Groups
     match /groups/{groupId} {
-      // Any authenticated user can read (needed for invite join)
-      allow read: if isAuthenticated();
+      allow read: if true;
       // Any authenticated user can create a group
       allow create: if isAuthenticated()
         && request.resource.data.createdBy == request.auth.uid

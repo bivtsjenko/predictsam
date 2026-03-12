@@ -258,7 +258,7 @@ export default function MarketDetailPage() {
                   <p className="text-sm text-muted-foreground">
                     Sign in to place a bet
                   </p>
-                  <Link href="/login">
+                  <Link href={`/login?redirect=/groups/${groupId}/markets/${marketId}`}>
                     <Button className="w-full">Sign In</Button>
                   </Link>
                 </CardContent>
