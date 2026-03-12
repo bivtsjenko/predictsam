@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { placeBet } from "@/lib/firestore/markets";
+import { getGroup, joinGroup } from "@/lib/firestore/groups";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,12 @@ export function BetPlacement({ market, currency, onBetPlaced }: BetPlacementProp
 
     setLoading(true);
     try {
+      // Auto-join group if not already a member
+      const group = await getGroup(market.groupId);
+      if (group && !group.memberIds.includes(user.uid)) {
+        await joinGroup(group.id!, user.uid);
+      }
+
       await placeBet(
         market.id!,
         market.groupId,
