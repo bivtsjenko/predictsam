@@ -13,10 +13,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithPhoneNumber,
   GoogleAuthProvider,
-  RecaptchaVerifier,
-  ConfirmationResult,
   signOut as firebaseSignOut,
   updateProfile,
 } from "firebase/auth";
@@ -35,10 +32,6 @@ interface AuthContextType {
     password: string,
     displayName: string
   ) => Promise<void>;
-  sendPhoneCode: (
-    phoneNumber: string,
-    recaptchaContainer: string
-  ) => Promise<ConfirmationResult>;
   signOut: () => Promise<void>;
 }
 
@@ -102,18 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateProfile(result.user, { displayName });
   }
 
-  async function sendPhoneCode(
-    phoneNumber: string,
-    recaptchaContainer: string
-  ): Promise<ConfirmationResult> {
-    const recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      recaptchaContainer,
-      { size: "invisible" }
-    );
-    return signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
-  }
-
   async function signOut() {
     await firebaseSignOut(auth);
   }
@@ -127,7 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithGoogle,
         signInWithEmail,
         signUpWithEmail,
-        sendPhoneCode,
         signOut,
       }}
     >

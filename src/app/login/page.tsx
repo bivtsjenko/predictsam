@@ -9,10 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import type { ConfirmationResult } from "firebase/auth";
 
 export default function LoginPage() {
-  const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, sendPhoneCode } =
+  const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } =
     useAuth();
   const router = useRouter();
 
@@ -22,13 +21,6 @@ export default function LoginPage() {
   const [displayName, setDisplayName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
-
-  // Phone state
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [confirmationResult, setConfirmationResult] =
-    useState<ConfirmationResult | null>(null);
-  const [phoneLoading, setPhoneLoading] = useState(false);
 
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -69,35 +61,6 @@ export default function LoginPage() {
     }
   }
 
-  async function handleSendCode() {
-    setPhoneLoading(true);
-    try {
-      const result = await sendPhoneCode(phoneNumber, "recaptcha-container");
-      setConfirmationResult(result);
-      toast.success("Verification code sent.");
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to send code.";
-      toast.error(message);
-    } finally {
-      setPhoneLoading(false);
-    }
-  }
-
-  async function handleVerifyCode() {
-    if (!confirmationResult) return;
-    setPhoneLoading(true);
-    try {
-      await confirmationResult.confirm(verificationCode);
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Invalid verification code.";
-      toast.error(message);
-    } finally {
-      setPhoneLoading(false);
-    }
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -110,7 +73,7 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-[60vh] px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to PredictBet</CardTitle>
+          <CardTitle className="text-2xl">Welcome to PredictSam</CardTitle>
           <p className="text-sm text-muted-foreground">
             Sign in to start predicting
           </p>
@@ -123,9 +86,6 @@ export default function LoginPage() {
               </TabsTrigger>
               <TabsTrigger value="email" className="flex-1">
                 Email
-              </TabsTrigger>
-              <TabsTrigger value="phone" className="flex-1">
-                Phone
               </TabsTrigger>
             </TabsList>
 
@@ -197,50 +157,6 @@ export default function LoginPage() {
                     : "Need an account? Create one"}
                 </Button>
               </form>
-            </TabsContent>
-
-            <TabsContent value="phone" className="space-y-4 pt-4">
-              {!confirmationResult ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+1234567890"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="w-full"
-                    onClick={handleSendCode}
-                    disabled={phoneLoading || !phoneNumber}
-                  >
-                    {phoneLoading ? "Sending..." : "Send Code"}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="code">Verification Code</Label>
-                    <Input
-                      id="code"
-                      placeholder="123456"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="w-full"
-                    onClick={handleVerifyCode}
-                    disabled={phoneLoading || !verificationCode}
-                  >
-                    {phoneLoading ? "Verifying..." : "Verify"}
-                  </Button>
-                </>
-              )}
-              <div id="recaptcha-container" />
             </TabsContent>
           </Tabs>
         </CardContent>
