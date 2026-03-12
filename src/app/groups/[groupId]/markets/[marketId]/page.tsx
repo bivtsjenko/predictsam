@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { useMarket, useMarketBets } from "@/hooks/use-markets";
 import { getMarketSettlements } from "@/lib/firestore/markets";
@@ -10,6 +11,7 @@ import { BetPlacement } from "@/components/bet-placement";
 import { MarketResolution } from "@/components/market-resolution";
 import { SettlementSummary } from "@/components/settlement-summary";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -17,8 +19,7 @@ import { cn } from "@/lib/utils";
 import type { Settlement } from "@/types";
 
 export default function MarketDetailPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const params = useParams();
   const groupId = params.groupId as string;
   const marketId = params.marketId as string;
@@ -29,13 +30,11 @@ export default function MarketDetailPage() {
   const [settlementsLoading, setSettlementsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [user, authLoading, router]);
-
-  useEffect(() => {
     async function fetchSettlements() {
+      if (!user) {
+        setSettlementsLoading(false);
+        return;
+      }
       try {
         const s = await getMarketSettlements(marketId);
         setSettlements(s);
@@ -46,9 +45,9 @@ export default function MarketDetailPage() {
       }
     }
     if (marketId) fetchSettlements();
-  }, [marketId, market?.status]);
+  }, [marketId, market?.status, user]);
 
-  if (authLoading || marketLoading) {
+  if (marketLoading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-6">
         <Skeleton className="h-8 w-3/4" />
@@ -199,18 +198,33 @@ export default function MarketDetailPage() {
         {/* Right column */}
         <div className="space-y-6">
           <div className="lg:sticky lg:top-20">
-            {market.status === "open" && <BetPlacement market={market} />}
-            {(market.status === "open" || market.status === "closed") && (
-              <div className="mt-4">
-                <MarketResolution market={market} />
-              </div>
-            )}
-            {market.status === "resolved" && (
+            {!user ? (
               <Card>
-                <CardContent className="py-6 text-center text-muted-foreground text-sm">
-                  This market has been resolved.
+                <CardContent className="py-6 text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Sign in to place a bet
+                  </p>
+                  <Link href="/login">
+                    <Button className="w-full">Sign In</Button>
+                  </Link>
                 </CardContent>
               </Card>
+            ) : (
+              <>
+                {market.status === "open" && <BetPlacement market={market} />}
+                {(market.status === "open" || market.status === "closed") && (
+                  <div className="mt-4">
+                    <MarketResolution market={market} />
+                  </div>
+                )}
+                {market.status === "resolved" && (
+                  <Card>
+                    <CardContent className="py-6 text-center text-muted-foreground text-sm">
+                      This market has been resolved.
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </div>
         </div>
